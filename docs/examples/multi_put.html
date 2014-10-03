@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>main.py</title>
+  <link rel="stylesheet" href="/css/pycco.css">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  <div class='section'>
+    <div class='docs'><h1>main.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">import</span> <span class="nn">endpoints</span>
+
+<span class="kn">from</span> <span class="nn">google.appengine.ext</span> <span class="kn">import</span> <span class="n">ndb</span>
+<span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">remote</span>
+
+<span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsModel</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">EndpointsModel</span><span class="p">):</span>
+  <span class="n">attr1</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">attr2</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">created</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyApi</span><span class="p">(</span><span class="n">remote</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Same as basic. Just for illustration purposes.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span>
+    <span class="n">my_model</span><span class="o">.</span><span class="n">put</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">my_model</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>Suppose we need to support batch insert for better performance,
+We would want a "batch-insert" API.</p>
+<p>Since endpoints-proto-datastore doesn't provide a decorator to take
+in a collection of some RPC Message as argument, we use the
+endpoints.method decorator to manually specify the types.</p>
+<p>Meanwhile, we utilize datastore-proto to generate ProtoRPC classes
+for us, such that we don't have to explicitly update them if the NDB
+class is updated.</p>
+<p>To get a ProtoRPC class that stores a collection of entities, use:
+  EndpointsDecoratedModel.ProtoCollection()
+To get a ProtoRPC class that stores an instance of that entity, use:
+  EndpointsDecoratedModel.ProtoModel()</p>
+<p>This handler illustrates how to write a custom handler with datastore-
+proto generated classes as input/output, as well as conversion between
+ndb entities &amp; ProtoRPC messages.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@endpoints.method</span><span class="p">(</span><span class="n">MyModel</span><span class="o">.</span><span class="n">ProtoCollection</span><span class="p">(),</span> <span class="c"># Input type: Collection of model.</span>
+                    <span class="n">MyModel</span><span class="o">.</span><span class="n">ProtoCollection</span><span class="p">(),</span> <span class="c"># Return type: Collection of model.</span>
+                    <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel_multi&#39;</span><span class="p">,</span>
+                    <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert_multi&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelMultiInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>You may want to check authentication here, since user_required is not available.
+.... (Omitted here)
+Get a list of entities by converting the RPC Messages passed in into corresponding
+NDB entities.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">entities</span> <span class="o">=</span> <span class="p">[</span><span class="n">MyModel</span><span class="o">.</span><span class="n">FromMessage</span><span class="p">(</span><span class="n">item_msg</span><span class="p">)</span> <span class="k">for</span> <span class="n">item_msg</span> <span class="ow">in</span> <span class="n">items</span><span class="o">.</span><span class="n">items</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Call ndb.put_multi to actually write the entites to datastore.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ndb</span><span class="o">.</span><span class="n">put_multi</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>Return an RPC Collection containing a list of inserted entities.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">items</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">ToMessage</span><span class="p">()</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">items</span>
+
+
+<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -6,15 +6,12 @@ from protorpc import remote
 from endpoints_proto_datastore.ndb import EndpointsModel
 
 
-# Same as in ../basic.
 class MyModel(EndpointsModel):
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()
   created = ndb.DateTimeProperty(auto_now_add=True)
 
 
-# Use of this decorator is the same for APIs created with or without
-# endpoints-proto-datastore.
 @endpoints.api(name='myapi', version='v1', description='My Little API')
 class MyApi(remote.Service):
 
@@ -27,8 +24,9 @@ class MyApi(remote.Service):
   # Suppose we need to support batch insert for better performance,
   # We would want a "batch-insert" API.
   #
-  # Since datastore-proto doesn't provide a batch insert, we do it by
-  # wrapping the handler with a standard endpoints.method decorator.
+  # Since endpoints-proto-datastore doesn't provide a decorator to take
+  # in a collection of some RPC Message as argument, we use the
+  # endpoints.method decorator to manually specify the types.
   #
   # Meanwhile, we utilize datastore-proto to generate ProtoRPC classes
   # for us, such that we don't have to explicitly update them if the NDB
@@ -61,5 +59,4 @@ class MyApi(remote.Service):
     return items
 
 
-# Same as basic.
 application = endpoints.api_server([MyApi], restricted=False)
