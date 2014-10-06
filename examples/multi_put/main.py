@@ -28,18 +28,10 @@ class MyApi(remote.Service):
   # in a collection of some RPC Message as argument, we use the
   # endpoints.method decorator to manually specify the types.
   #
-  # Meanwhile, we utilize datastore-proto to generate ProtoRPC classes
-  # for us, such that we don't have to explicitly update them if the NDB
-  # class is updated.
-  #
   # To get a ProtoRPC class that stores a collection of entities, use:
   #   EndpointsDecoratedModel.ProtoCollection()
   # To get a ProtoRPC class that stores an instance of that entity, use:
   #   EndpointsDecoratedModel.ProtoModel()
-  #
-  # This handler illustrates how to write a custom handler with datastore-
-  # proto generated classes as input/output, as well as conversion between
-  # ndb entities & ProtoRPC messages.
   #
   @endpoints.method(MyModel.ProtoCollection(), # Input type: Collection of model.
                     MyModel.ProtoCollection(), # Return type: Collection of model.
@@ -57,6 +49,9 @@ class MyApi(remote.Service):
     # Return an RPC Collection containing a list of inserted entities.
     items.items = [entity.ToMessage() for entity in entities]
     return items
+    # The advantage of using endpoints-proto-datastore API in this example
+    # is that the corresponding ProtoRPC class is always up-to-date with
+    # the NDB entity.
 
 
 application = endpoints.api_server([MyApi], restricted=False)

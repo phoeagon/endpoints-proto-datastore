@@ -79,19 +79,13 @@
       </div>
       <p>Suppose we need to support batch insert for better performance,
 We would want a "batch-insert" API.</p>
-<p>Since endpoints-proto-datastore doesn't provide a decorator to take
+<p>Since <code>endpoints-proto-datastore</code> doesn't provide a decorator to take
 in a collection of some RPC Message as argument, we use the
-endpoints.method decorator to manually specify the types.</p>
-<p>Meanwhile, we utilize datastore-proto to generate ProtoRPC classes
-for us, such that we don't have to explicitly update them if the NDB
-class is updated.</p>
+<code>endpoints.method</code> decorator to manually specify the types.</p>
 <p>To get a ProtoRPC class that stores a collection of entities, use:
-  EndpointsDecoratedModel.ProtoCollection()
+  <code>EndpointsDecoratedModel.ProtoCollection()</code>
 To get a ProtoRPC class that stores an instance of that entity, use:
-  EndpointsDecoratedModel.ProtoModel()</p>
-<p>This handler illustrates how to write a custom handler with datastore-
-proto generated classes as input/output, as well as conversion between
-ndb entities &amp; ProtoRPC messages.</p>
+  <code>EndpointsDecoratedModel.ProtoModel()</code></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>  <span class="nd">@endpoints.method</span><span class="p">(</span><span class="n">MyModel</span><span class="o">.</span><span class="n">ProtoCollection</span><span class="p">(),</span> <span class="c"># Input type: Collection of model.</span>
@@ -108,7 +102,7 @@ ndb entities &amp; ProtoRPC messages.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
-      <p>You may want to check authentication here, since user_required is not available.
+      <p>You may want to check authentication here, since <code>user_required</code> is not available.
 .... (Omitted here)
 Get a list of entities by converting the RPC Messages passed in into corresponding
 NDB entities.</p>
@@ -123,7 +117,7 @@ NDB entities.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-6'>#</a>
       </div>
-      <p>Call ndb.put_multi to actually write the entites to datastore.</p>
+      <p>Call <code>ndb.put_multi</code> to actually write the entites to datastore.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="n">ndb</span><span class="o">.</span><span class="n">put_multi</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span></pre></div>
@@ -139,10 +133,21 @@ NDB entities.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="n">items</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">ToMessage</span><span class="p">()</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">items</span>
-
-
-<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">items</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>The advantage of using endpoints-proto-datastore API in this example
+is that the corresponding ProtoRPC class is always up-to-date with
+the NDB entity.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 </pre></div>
     </div>
